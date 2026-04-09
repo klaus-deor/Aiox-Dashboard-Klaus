@@ -5,50 +5,43 @@ import fs from "node:fs";
 import net from "node:net";
 
 let mainWindow: BrowserWindow | null = null;
+let splashWindow: BrowserWindow | null = null;
 let nextProcess: ChildProcess | null = null;
 let serverPort = parseInt(process.env.ELECTRON_DEV_PORT || "3456", 10);
 
 const isDev = !app.isPackaged;
-// When launched via concurrently, the Next.js server is already running externally
 const externalDevServer = !!process.env.ELECTRON_DEV_PORT;
 
-/** Find the AIOX workspace root by looking for .aiox-core in ancestors */
-function findWorkspaceRoot(): string | null {
-  // In dev mode, the app sits at apps/aiox-dashboard inside the workspace
-  const devRoot = path.resolve(__dirname, "..", "..", "..");
-  if (fs.existsSync(path.join(devRoot, ".aiox-core"))) {
-    return devRoot;
-  }
+const CONFIG_PATH = path.join(app.getPath("userData"), "config.json");
 
-  // Check common locations
-  const candidates = [
-    process.cwd(),
-    path.resolve(process.cwd(), "..", ".."),
-    path.resolve(app.getPath("home"), "Documentos", "Saas", "AIOX Pro"),
-    path.resolve(app.getPath("home"), "Documents", "Saas", "AIOX Pro"),
-  ];
-
-  for (const candidate of candidates) {
-    if (fs.existsSync(path.join(candidate, ".aiox-core"))) {
-      return candidate;
+/** Load last used workspace path from config */
+function loadLastWorkspace(): string | null {
+  try {
+    if (fs.existsSync(CONFIG_PATH)) {
+      const config = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf-8"));
+      if (config.workspaceRoot && fs.existsSync(config.workspaceRoot)) {
+        return config.workspaceRoot;
+      }
     }
-  }
-
-  // Walk up from executable location
-  let current = path.dirname(app.getPath("exe"));
-  for (let i = 0; i < 10; i++) {
-    if (fs.existsSync(path.join(current, ".aiox-core"))) {
-      return current;
-    }
-    const parent = path.dirname(current);
-    if (parent === current) break;
-    current = parent;
-  }
-
+  } catch { /* ignore */ }
   return null;
 }
 
-/** Find an available port starting from the preferred one */
+/** Save workspace path for next launch */
+function saveWorkspacePath(workspaceRoot: string): void {
+  try {
+    fs.mkdirSync(path.dirname(CONFIG_PATH), { recursive: true });
+    fs.writeFileSync(CONFIG_PATH, JSON.stringify({ workspaceRoot }, null, 2));
+  } catch { /* ignore */ }
+}
+
+/** Check if a folder is a valid AIOX workspace */
+function isValidWorkspace(folderPath: string): boolean {
+  return fs.existsSync(path.join(folderPath, ".aiox-core")) ||
+         fs.existsSync(path.join(folderPath, ".aios-core"));
+}
+
+/** Find an available port */
 function findAvailablePort(startPort: number): Promise<number> {
   return new Promise((resolve) => {
     const server = net.createServer();
@@ -63,7 +56,7 @@ function findAvailablePort(startPort: number): Promise<number> {
 }
 
 /** Wait for the Next.js server to be ready */
-function waitForServer(port: number, timeout = 30000): Promise<void> {
+function waitForServer(port: number, timeout = 60000): Promise<void> {
   const start = Date.now();
   return new Promise((resolve, reject) => {
     const check = () => {
@@ -74,9 +67,9 @@ function waitForServer(port: number, timeout = 30000): Promise<void> {
       });
       socket.on("error", () => {
         if (Date.now() - start > timeout) {
-          reject(new Error("Next.js server failed to start within timeout"));
+          reject(new Error("Server failed to start within timeout"));
         } else {
-          setTimeout(check, 300);
+          setTimeout(check, 500);
         }
       });
     };
@@ -84,10 +77,45 @@ function waitForServer(port: number, timeout = 30000): Promise<void> {
   });
 }
 
-/** Start the Next.js server (skipped if external dev server is running) */
+/** Show splash screen while loading */
+function showSplash(): void {
+  splashWindow = new BrowserWindow({
+    width: 400,
+    height: 300,
+    frame: false,
+    transparent: true,
+    alwaysOnTop: true,
+    resizable: false,
+    skipTaskbar: true,
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  });
+
+  const html = `
+    <html>
+    <body style="margin:0;display:flex;align-items:center;justify-content:center;height:100vh;
+      background:rgba(9,9,11,0.95);border-radius:16px;font-family:system-ui,sans-serif;
+      color:#fafafa;flex-direction:column;gap:16px;-webkit-app-region:drag;
+      border:1px solid rgba(255,255,255,0.1);">
+      <div style="font-size:48px;">⚡</div>
+      <div style="font-size:20px;font-weight:600;">AIOX Dashboard</div>
+      <div style="font-size:13px;color:#a1a1aa;">Iniciando servidor...</div>
+      <div style="width:120px;height:3px;background:rgba(255,255,255,0.1);border-radius:2px;overflow:hidden;">
+        <div style="width:40%;height:100%;background:#a78bfa;border-radius:2px;
+          animation:loading 1.2s ease-in-out infinite alternate;"></div>
+      </div>
+      <style>@keyframes loading{from{transform:translateX(-60px)}to{transform:translateX(100px)}}</style>
+    </body>
+    </html>`;
+
+  splashWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(html)}`);
+}
+
+/** Start the Next.js server */
 async function startNextServer(workspaceRoot: string): Promise<void> {
   if (externalDevServer) {
-    // Dev mode with concurrently — server already running, just wait for it
     await waitForServer(serverPort);
     return;
   }
@@ -113,7 +141,6 @@ async function startNextServer(workspaceRoot: string): Promise<void> {
       stdio: "pipe",
     });
   } else {
-    // In production, use the standalone server
     const serverPath = path.join(appDir, ".next", "standalone", "server.js");
     nextProcess = spawn("node", [serverPath], {
       cwd: path.join(appDir, ".next", "standalone"),
@@ -156,12 +183,15 @@ async function createWindow(): Promise<void> {
   });
 
   mainWindow.once("ready-to-show", () => {
+    if (splashWindow) {
+      splashWindow.close();
+      splashWindow = null;
+    }
     mainWindow?.show();
   });
 
   mainWindow.loadURL(`http://127.0.0.1:${serverPort}`);
 
-  // Open external links in the system browser
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: "deny" };
@@ -172,36 +202,65 @@ async function createWindow(): Promise<void> {
   });
 }
 
-app.whenReady().then(async () => {
-  const workspaceRoot = findWorkspaceRoot();
+/** Always ask user to select workspace, suggesting last used */
+async function selectWorkspace(): Promise<string | null> {
+  const lastUsed = loadLastWorkspace();
 
-  if (!workspaceRoot) {
-    const result = await dialog.showOpenDialog({
-      title: "Selecione a pasta do workspace AIOX Pro",
-      message: "Não foi possível encontrar o workspace AIOX automaticamente. Selecione a pasta raiz do projeto.",
-      properties: ["openDirectory"],
+  const result = await dialog.showOpenDialog({
+    title: "Selecione o workspace AIOX",
+    message: "Escolha a pasta raiz do projeto AIOX (que contém .aiox-core)",
+    defaultPath: lastUsed || app.getPath("home"),
+    properties: ["openDirectory"],
+    buttonLabel: "Abrir Workspace",
+  });
+
+  if (result.canceled || result.filePaths.length === 0) return null;
+
+  const selected = result.filePaths[0];
+
+  if (!isValidWorkspace(selected)) {
+    const retry = await dialog.showMessageBox({
+      type: "warning",
+      title: "Workspace invalido",
+      message: `A pasta selecionada nao contem .aiox-core:\n\n${selected}\n\nSelecione a pasta raiz do seu workspace AIOX.`,
+      buttons: ["Tentar novamente", "Sair"],
     });
-
-    if (result.canceled || result.filePaths.length === 0) {
-      app.quit();
-      return;
-    }
-
-    const selected = result.filePaths[0];
-    if (!fs.existsSync(path.join(selected, ".aiox-core"))) {
-      dialog.showErrorBox(
-        "Workspace inválido",
-        "A pasta selecionada não contém .aiox-core. Selecione a raiz do workspace AIOX Pro."
-      );
-      app.quit();
-      return;
-    }
-
-    await startNextServer(selected);
-  } else {
-    await startNextServer(workspaceRoot);
+    if (retry.response === 0) return selectWorkspace();
+    return null;
   }
 
+  return selected;
+}
+
+app.whenReady().then(async () => {
+  let workspaceRoot: string | null;
+
+  if (isDev && !externalDevServer) {
+    // Dev mode without external server: auto-detect from project structure
+    const devRoot = path.resolve(__dirname, "..", "..", "..");
+    if (isValidWorkspace(devRoot)) {
+      workspaceRoot = devRoot;
+    } else {
+      workspaceRoot = await selectWorkspace();
+    }
+  } else if (externalDevServer) {
+    // Dev mode with concurrently: workspace is passed via env
+    workspaceRoot = process.env.AIOX_WORKSPACE_ROOT || null;
+  } else {
+    // Production: always ask user to choose
+    workspaceRoot = await selectWorkspace();
+  }
+
+  if (!workspaceRoot) {
+    app.quit();
+    return;
+  }
+
+  // Show splash while server starts
+  showSplash();
+
+  saveWorkspacePath(workspaceRoot);
+  await startNextServer(workspaceRoot);
   await createWindow();
 
   app.on("activate", () => {
