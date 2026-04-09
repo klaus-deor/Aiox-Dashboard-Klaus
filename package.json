@@ -10,6 +10,7 @@
     "lint": "next lint",
     "electron:compile": "tsc -p electron/tsconfig.json",
     "electron:dev": "npm run electron:compile && node electron/dev-runner.js",
+    "postbuild": "node electron/copy-static.js",
     "electron:build": "npm run build && npm run electron:compile && electron-builder",
     "electron:build:linux": "npm run build && npm run electron:compile && electron-builder --linux",
     "electron:build:mac": "npm run build && npm run electron:compile && electron-builder --mac",

@@ -7,7 +7,6 @@ directories:
 files:
   - dist-electron/**/*
   - .next/standalone/**/*
-  - .next/static/**/*
   - public/**/*
   - package.json
 
