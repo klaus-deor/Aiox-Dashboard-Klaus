@@ -1,0 +1,38 @@
+appId: com.aiox.dashboard
+productName: AIOX Dashboard
+directories:
+  output: release
+  buildResources: public
+
+files:
+  - dist-electron/**/*
+  - .next/standalone/**/*
+  - .next/static/**/*
+  - public/**/*
+  - package.json
+
+extraResources:
+  - from: .next/static
+    to: app/.next/static
+
+asar: false
+publish: null
+
+linux:
+  target:
+    - target: AppImage
+      arch: [x64]
+  category: Development
+  icon: public/icon.png
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  icon: public/icon.png
+
+win:
+  target:
+    - target: portable
+      arch: [x64]
+  icon: public/icon.png
