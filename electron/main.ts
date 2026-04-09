@@ -106,7 +106,10 @@ function showSplash(): void {
         <div style="width:40%;height:100%;background:#a78bfa;border-radius:2px;
           animation:loading 1.2s ease-in-out infinite alternate;"></div>
       </div>
-      <style>@keyframes loading{from{transform:translateX(-60px)}to{transform:translateX(100px)}}</style>
+      <style>
+        html,body{margin:0;padding:0;overflow:hidden;width:100%;height:100%}
+        @keyframes loading{from{transform:translateX(-60px)}to{transform:translateX(100px)}}
+      </style>
     </body>
     </html>`;
 
