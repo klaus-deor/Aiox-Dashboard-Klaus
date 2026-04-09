@@ -1,7 +1,7 @@
 import { parseAllAgents } from "@/lib/parsers/agent-parser";
 import { AgentsPageClient } from "./client";
 
-export const revalidate = 10;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "AIOX Dashboard — Agents",

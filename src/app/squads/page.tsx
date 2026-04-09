@@ -1,7 +1,7 @@
 import { parseAllSquads } from "@/lib/parsers/squad-parser";
 import { SquadsPageClient } from "./client";
 
-export const revalidate = 10;
+export const dynamic = "force-dynamic";
 
 export const metadata = {
   title: "AIOX Dashboard — Squads",

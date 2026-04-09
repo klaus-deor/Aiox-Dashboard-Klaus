@@ -6,6 +6,8 @@ import { parseAllAgents } from "@/lib/parsers/agent-parser";
 import { parseAllSquads } from "@/lib/parsers/squad-parser";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "AIOX Dashboard",
   description: "Agent & Squad ecosystem monitor",
