@@ -1,5 +1,5 @@
 import { app, BrowserWindow, dialog, shell } from "electron";
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, fork, type ChildProcess } from "node:child_process";
 import path from "node:path";
 import fs from "node:fs";
 import net from "node:net";
@@ -122,9 +122,9 @@ async function startNextServer(workspaceRoot: string): Promise<void> {
 
   serverPort = await findAvailablePort(3456);
 
-  const appDir = isDev
-    ? path.resolve(__dirname, "..")
-    : path.resolve(__dirname, "..", "app");
+  // In packaged mode, app root is one level up from dist-electron/
+  // In dev mode, app root is also one level up from dist-electron/
+  const appDir = path.resolve(__dirname, "..");
 
   const env = {
     ...process.env,
@@ -141,9 +141,16 @@ async function startNextServer(workspaceRoot: string): Promise<void> {
       stdio: "pipe",
     });
   } else {
+    // Use fork() to leverage Electron's embedded Node.js (no system node required)
     const serverPath = path.join(appDir, ".next", "standalone", "server.js");
-    nextProcess = spawn("node", [serverPath], {
-      cwd: path.join(appDir, ".next", "standalone"),
+    const standaloneCwd = path.join(appDir, ".next", "standalone");
+
+    console.log(`[electron] Starting server: ${serverPath}`);
+    console.log(`[electron] CWD: ${standaloneCwd}`);
+    console.log(`[electron] Server exists: ${fs.existsSync(serverPath)}`);
+
+    nextProcess = fork(serverPath, [], {
+      cwd: standaloneCwd,
       env,
       stdio: "pipe",
     });

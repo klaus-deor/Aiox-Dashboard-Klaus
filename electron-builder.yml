@@ -11,10 +11,6 @@ files:
   - public/**/*
   - package.json
 
-extraResources:
-  - from: .next/static
-    to: app/.next/static
-
 asar: false
 publish: null
 
