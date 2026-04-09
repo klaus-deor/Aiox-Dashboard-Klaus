@@ -1,73 +1,127 @@
-# React + TypeScript + Vite
+<p align="center">
+  <img src="https://img.shields.io/badge/AIOX-Dashboard-a78bfa?style=for-the-badge&logo=electron&logoColor=white" alt="AIOX Dashboard" />
+  <img src="https://img.shields.io/github/v/release/klaus-deor/Aiox-Dashboard-Klaus?style=for-the-badge&color=22c55e" alt="Release" />
+  <img src="https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-18181b?style=for-the-badge" alt="Platforms" />
+</p>
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+<h1 align="center">AIOX Dashboard</h1>
 
-Currently, two official plugins are available:
+<p align="center">
+  Desktop app for monitoring your AIOX agents, squads, and sessions.<br/>
+  Built with Next.js + Electron. Runs on Linux, macOS, and Windows.
+</p>
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+---
 
-## React Compiler
+## Overview
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+AIOX Dashboard is a cross-platform desktop application that reads your local AIOX workspace and gives you a visual overview of:
 
-## Expanding the ESLint configuration
+- **Agents** — all registered agents with their roles, commands, and dependencies
+- **Squads** — installed squads with agent composition and workflow counts
+- **Sessions** — recent activity and session history
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+No internet connection required. No server to run. Just open the app, point it to your AIOX workspace, and go.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+## Download
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+Go to [**Releases**](https://github.com/klaus-deor/Aiox-Dashboard-Klaus/releases/latest) and download the file for your OS:
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Platform | File | How to run |
+|----------|------|------------|
+| Linux | `.AppImage` | `chmod +x` then double-click |
+| Windows | `.exe` | Double-click (portable, no install) |
+| macOS (Intel) | `.dmg` | Open and drag to Applications |
+| macOS (Apple Silicon) | `-arm64.dmg` | Open and drag to Applications |
+
+> **Windows note:** SmartScreen may show a warning on first launch since the app is not code-signed. Click "More info" > "Run anyway".
+
+## Requirements
+
+- An AIOX workspace on your machine (any folder containing `.aiox-core` or `.aios-core`)
+- That's it. No Node.js, no npm, no terminal.
+
+On first launch, the app will ask you to select your workspace folder. It remembers your choice for next time.
+
+## Development
+
+If you want to run from source or contribute:
+
+```bash
+# Prerequisites: Node.js >= 22
+
+# Install dependencies
+npm install
+
+# Run in dev mode (hot reload)
+npm run electron:dev
+
+# Build for your platform
+npm run electron:build:linux   # AppImage
+npm run electron:build:mac     # dmg
+npm run electron:build:win     # portable exe
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+Output goes to `release/`.
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## Tech Stack
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+| Layer | Technology |
+|-------|-----------|
+| UI | Next.js 16, React 19, Tailwind CSS 4 |
+| Desktop | Electron 41 |
+| Fonts | Geist Sans & Geist Mono |
+| Icons | Lucide React |
+| Build | electron-builder |
+| CI/CD | GitHub Actions (auto-release on tag) |
+
+## How It Works
+
+1. On launch, you select (or it remembers) your AIOX workspace folder
+2. The app starts an embedded Next.js server using Electron's built-in Node.js
+3. It reads `.aiox-core/development/agents/`, `squads/`, and session files directly from disk
+4. Everything runs locally — no network requests, no external APIs
+
+## Creating a Release
+
+Releases are automated via GitHub Actions. To publish a new version:
+
+```bash
+git tag -a v0.4.0 -m "v0.4.0 - Description"
+git push origin v0.4.0
 ```
+
+The workflow builds for all 3 platforms and creates a GitHub Release with downloadable executables.
+
+## Security
+
+- **No telemetry.** The app does not collect, send, or store any data externally.
+- **No network access required.** All data is read from your local filesystem.
+- **No credentials stored.** The only persisted config is your workspace folder path, saved in your OS user data directory.
+- **Open source.** You can audit every line of code in this repository.
+
+If you find a security vulnerability, please open an issue or contact [klausdeor@gmail.com](mailto:klausdeor@gmail.com).
+
+## License
+
+MIT License
+
+Copyright (c) 2026 Klaus Deor
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
