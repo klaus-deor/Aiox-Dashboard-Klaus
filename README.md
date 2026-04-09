@@ -1,127 +1,111 @@
 <p align="center">
   <img src="https://img.shields.io/badge/AIOX-Dashboard-a78bfa?style=for-the-badge&logo=electron&logoColor=white" alt="AIOX Dashboard" />
   <img src="https://img.shields.io/github/v/release/klaus-deor/Aiox-Dashboard-Klaus?style=for-the-badge&color=22c55e" alt="Release" />
-  <img src="https://img.shields.io/badge/platforms-Linux%20%7C%20macOS%20%7C%20Windows-18181b?style=for-the-badge" alt="Platforms" />
+  <img src="https://img.shields.io/badge/plataformas-Linux%20%7C%20macOS%20%7C%20Windows-18181b?style=for-the-badge" alt="Plataformas" />
 </p>
 
 <h1 align="center">AIOX Dashboard</h1>
 
 <p align="center">
-  Desktop app for monitoring your AIOX agents, squads, and sessions.<br/>
-  Built with Next.js + Electron. Runs on Linux, macOS, and Windows.
+  Aplicativo desktop para monitorar seus agentes, squads e sessões AIOX.<br/>
+  Feito com Next.js + Electron. Roda no Linux, macOS e Windows.
+</p>
+
+<p align="center">
+  <a href="./README.en.md">English version</a>
 </p>
 
 ---
 
-## Overview
+## Visão Geral
 
-AIOX Dashboard is a cross-platform desktop application that reads your local AIOX workspace and gives you a visual overview of:
+O AIOX Dashboard é um aplicativo desktop multiplataforma que lê seu workspace AIOX local e oferece uma visão completa de:
 
-- **Agents** — all registered agents with their roles, commands, and dependencies
-- **Squads** — installed squads with agent composition and workflow counts
-- **Sessions** — recent activity and session history
+- **Agentes** — todos os agentes registrados com seus papéis, comandos e dependências
+- **Squads** — squads instalados com composição de agentes e contagem de workflows
+- **Sessões** — atividade recente e histórico de sessões
 
-No internet connection required. No server to run. Just open the app, point it to your AIOX workspace, and go.
+Não precisa de internet. Não precisa rodar servidor. Basta abrir o app, apontar para seu workspace AIOX e pronto.
 
 ## Download
 
-Go to [**Releases**](https://github.com/klaus-deor/Aiox-Dashboard-Klaus/releases/latest) and download the file for your OS:
+Acesse [**Releases**](https://github.com/klaus-deor/Aiox-Dashboard-Klaus/releases/latest) e baixe o arquivo do seu sistema:
 
-| Platform | File | How to run |
-|----------|------|------------|
-| Linux | `.AppImage` | `chmod +x` then double-click |
-| Windows | `.exe` | Double-click (portable, no install) |
-| macOS (Intel) | `.dmg` | Open and drag to Applications |
-| macOS (Apple Silicon) | `-arm64.dmg` | Open and drag to Applications |
+| Plataforma | Arquivo | Como usar |
+|------------|---------|-----------|
+| Linux | `.AppImage` | `chmod +x` e duplo clique |
+| Windows | `.exe` | Duplo clique (portátil, sem instalar) |
+| macOS (Intel) | `.dmg` | Abrir e arrastar para Aplicativos |
+| macOS (Apple Silicon) | `-arm64.dmg` | Abrir e arrastar para Aplicativos |
 
-> **Windows note:** SmartScreen may show a warning on first launch since the app is not code-signed. Click "More info" > "Run anyway".
+> **Nota Windows:** O SmartScreen pode exibir um aviso na primeira execução, pois o app não possui assinatura digital. Clique em "Mais informações" > "Executar mesmo assim".
 
-## Requirements
+## Requisitos
 
-- An AIOX workspace on your machine (any folder containing `.aiox-core` or `.aios-core`)
-- That's it. No Node.js, no npm, no terminal.
+- Um workspace AIOX na sua máquina (qualquer pasta que contenha `.aiox-core` ou `.aios-core`)
+- Só isso. Sem Node.js, sem npm, sem terminal.
 
-On first launch, the app will ask you to select your workspace folder. It remembers your choice for next time.
+Na primeira execução, o app pede para selecionar a pasta do workspace. Ele lembra a escolha para as próximas vezes.
 
-## Development
+## Desenvolvimento
 
-If you want to run from source or contribute:
+Se quiser rodar a partir do código-fonte ou contribuir:
 
 ```bash
-# Prerequisites: Node.js >= 22
+# Pré-requisito: Node.js >= 22
 
-# Install dependencies
+# Instalar dependências
 npm install
 
-# Run in dev mode (hot reload)
+# Rodar em modo dev (hot reload)
 npm run electron:dev
 
-# Build for your platform
+# Gerar executável para sua plataforma
 npm run electron:build:linux   # AppImage
 npm run electron:build:mac     # dmg
-npm run electron:build:win     # portable exe
+npm run electron:build:win     # exe portátil
 ```
 
-Output goes to `release/`.
+O output vai para a pasta `release/`.
 
-## Tech Stack
+## Stack
 
-| Layer | Technology |
-|-------|-----------|
-| UI | Next.js 16, React 19, Tailwind CSS 4 |
+| Camada | Tecnologia |
+|--------|-----------|
+| Interface | Next.js 16, React 19, Tailwind CSS 4 |
 | Desktop | Electron 41 |
-| Fonts | Geist Sans & Geist Mono |
-| Icons | Lucide React |
+| Fontes | Geist Sans & Geist Mono |
+| Ícones | Lucide React |
 | Build | electron-builder |
-| CI/CD | GitHub Actions (auto-release on tag) |
+| CI/CD | GitHub Actions (release automática por tag) |
 
-## How It Works
+## Como Funciona
 
-1. On launch, you select (or it remembers) your AIOX workspace folder
-2. The app starts an embedded Next.js server using Electron's built-in Node.js
-3. It reads `.aiox-core/development/agents/`, `squads/`, and session files directly from disk
-4. Everything runs locally — no network requests, no external APIs
+1. Ao abrir, você seleciona (ou ele lembra) a pasta do seu workspace AIOX
+2. O app inicia um servidor Next.js embutido usando o Node.js interno do Electron
+3. Ele lê `.aiox-core/development/agents/`, `squads/` e arquivos de sessão direto do disco
+4. Tudo roda localmente — sem requisições de rede, sem APIs externas
 
-## Creating a Release
+## Criando uma Release
 
-Releases are automated via GitHub Actions. To publish a new version:
+Releases são automatizadas via GitHub Actions. Para publicar uma nova versão:
 
 ```bash
-git tag -a v0.4.0 -m "v0.4.0 - Description"
+git tag -a v0.4.0 -m "v0.4.0 - Descrição"
 git push origin v0.4.0
 ```
 
-The workflow builds for all 3 platforms and creates a GitHub Release with downloadable executables.
+O workflow builda para as 3 plataformas e cria uma Release no GitHub com os executáveis.
 
-## Security
+## Segurança
 
-- **No telemetry.** The app does not collect, send, or store any data externally.
-- **No network access required.** All data is read from your local filesystem.
-- **No credentials stored.** The only persisted config is your workspace folder path, saved in your OS user data directory.
-- **Open source.** You can audit every line of code in this repository.
+- **Sem telemetria.** O app não coleta, envia ou armazena dados externamente.
+- **Sem acesso à internet.** Todos os dados são lidos do seu sistema de arquivos local.
+- **Sem credenciais armazenadas.** A única configuração persistida é o caminho do workspace, salvo no diretório de dados do usuário do seu SO.
+- **Código aberto.** Você pode auditar cada linha de código neste repositório.
 
-If you find a security vulnerability, please open an issue or contact [klausdeor@gmail.com](mailto:klausdeor@gmail.com).
+Se encontrar uma vulnerabilidade de segurança, abra uma issue ou entre em contato via [klausdeor@gmail.com](mailto:klausdeor@gmail.com).
 
-## License
+## Licença
 
-MIT License
-
-Copyright (c) 2026 Klaus Deor
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+[MIT License](./LICENSE) — Copyright (c) 2026 Klaus Deor
